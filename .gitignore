@@ -1,0 +1,16 @@
+# Dependencies & Build
+node_modules/
+dist/
+build/
+.next/
+
+# Logs & Debug
+*.log
+npm-debug.log*
+
+# Environment Variables (Secrets)
+.env*
+
+# OS/System files
+.DS_Store
+Thumbs.db
