@@ -1,7 +1,7 @@
 import re
 from typing import Any
 
-from template import RAG_SYSTEM_TEMPLATE
+from utils.template import RAG_SYSTEM_TEMPLATE
 
 
 class Prompt:
@@ -32,7 +32,8 @@ class Prompt:
         formated_values = {
             key: values.get(key, self.defaults.get(key, "")) for key in variables
         }
-        return self.prompt.format(**formated_values)
+        formatted_prompt = self.prompt.format(**formated_values)
+        return { "role": self.role, "content": formatted_prompt }
 
     def get_all_variables(self):
         """Find all variables {} in the prompt"""

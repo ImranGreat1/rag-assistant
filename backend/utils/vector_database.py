@@ -3,7 +3,8 @@ from collections import defaultdict
 from collections.abc import Callable
 
 import numpy as np
-from embedding import GeminiEmbeddingModel
+
+from utils.embedding import GeminiEmbeddingModel
 
 
 def consine_similarity(vector_a: np.array, vector_b: np.array):
