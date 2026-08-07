@@ -1,9 +1,10 @@
+import asyncio
 import os
 from typing import Any
 
 from dotenv import load_dotenv
 from google import genai
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 
 class ChatOpenAI:
@@ -20,20 +21,33 @@ class ChatOpenAI:
         self.model_name = model_name
         self.base_url = base_url
         self.api_key = api_key
-
-    def run(self, messages: list[dict[str, Any]], text_only: bool = True):
-        client = (
-            OpenAI(api_key=self.api_key, base_url=self.base_url)
+        self.client = (
+            AsyncOpenAI(api_key=self.api_key, base_url=self.base_url)
             if self.base_url
-            else OpenAI()
-        )
-        response = client.chat.completions.create(
-            model=self.model_name, messages=messages
+            else AsyncOpenAI()
         )
 
-        if text_only:
+    async def run(self, messages: list[dict[str, Any]], stream: bool = False):
+        if stream:
+            return self._stream_response(messages)
+        else:
+            response = await self.client.chat.completions.create(
+                model=self.model_name, 
+                messages=messages,
+                stream=stream
+            )
             return response.choices[0].message.content
-        return response
+
+    async def _stream_response(self, messages: list[dict[str, Any]]):
+        response = await self.client.chat.completions.create(
+            model=self.model_name,
+            messages=messages,
+            stream=True
+        )
+
+        async for chunk in response:
+            if chunk.choices and chunk.choices[0].delta.content:
+                yield chunk.choices[0].delta.content
 
 
 class ChatGoogleGenAI:
@@ -66,16 +80,16 @@ class ChatGoogleGenAI:
         return interaction
 
 
-if __name__ == "__main__":
+async def main():
     load_dotenv()
-
+    
     # Testing Google chat API
-    chat_google = ChatGoogleGenAI(model_name="gemini-3.6-flash")
-    response = chat_google.run(
-        input="Hi gemini",
-        instruction="You are helpful assistant that gives brief and precise response",
-    )
-    print(response.output_text)
+    # chat_google = ChatGoogleGenAI(model_name="gemini-3.6-flash")
+    # response = chat_google.run(
+    #     input="Hi gemini",
+    #     instruction="You are helpful assistant that gives brief and precise response",
+    # )
+    # print(response.output_text)
 
     # Testing OpenAI chat API
     chat_openai = ChatOpenAI(
@@ -88,7 +102,12 @@ if __name__ == "__main__":
             "role": "developer",
             "content": "You are helpful assistant that gives brief and precise response",
         },
-        {"role": "user", "content": "Hi GPT"},
+        {"role": "user", "content": "In not less than 100 words, give a brief explaination on AI and Agents"},
     ]
-    response = chat_openai.run(messages=messages, text_only=True)
-    print(response)
+    stream_gen = await chat_openai.run(messages=messages, stream=True)
+    async for chunk in stream_gen:
+        print(chunk)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

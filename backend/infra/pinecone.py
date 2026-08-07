@@ -65,5 +65,7 @@ class PineconeDB:
 
     def search_index(self, index: Index, namespace: str, query: Query, rerank: Rerank):
         results = index.search(namespace=namespace, query=query, rerank=rerank)
-        for hit in results["result"]["hits"]:
-            print(f"{hit.score:.2f}  {hit.fields['content']}")
+        return [(hit.fields["content"], round(hit.score, 2)) for hit in results["result"]["hits"]]
+
+    def close(self):
+        self.pc.close()
