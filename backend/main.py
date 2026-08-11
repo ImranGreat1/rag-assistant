@@ -1,3 +1,5 @@
+import os
+
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,7 +16,7 @@ class UserQuery(BaseModel):
 
 app = FastAPI()
 
-origins = ["http://localhost:5173"]
+origins = [os.getenv("FRONTEND_URL_LOCAL"), os.getenv("FRONTEND_URL_LIVE")]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
