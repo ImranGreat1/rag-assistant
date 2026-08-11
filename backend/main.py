@@ -15,7 +15,8 @@ class UserQuery(BaseModel):
 
 
 app = FastAPI()
-
+print(os.getenv("FRONTEND_URL_LOCAL"))
+print(os.getenv("FRONTEND_URL_LIVE"))
 origins = [os.getenv("FRONTEND_URL_LOCAL"), os.getenv("FRONTEND_URL_LIVE")]
 app.add_middleware(
     CORSMiddleware,
