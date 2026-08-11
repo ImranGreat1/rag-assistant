@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from utils.rag_pipeline import RagPipeline
@@ -13,11 +14,18 @@ class UserQuery(BaseModel):
 
 app = FastAPI()
 
+origins = ["http://localhost:5173"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],            
+    allow_headers=["*"], 
+)
 
 @app.get("/")
 def root():
     return {"Introduction": "Hello, I am helpful assistant. You can ask me anything"}
-
 
 @app.post("/chat")
 async def chat(user_query: UserQuery):
