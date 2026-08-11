@@ -26,7 +26,7 @@ function App()
 
     return (
         <div className="flex flex-col p-4 gap-4 items-center h-screen bg-mist-300 App">
-            <div className="max-w-xl flex-1 bg-gray-200">
+            <div className="w-2xl flex-1 bg-gray-200">
                 {text}
             </div>
             <ChatInput onChange={onChange} onClick={onClick} />

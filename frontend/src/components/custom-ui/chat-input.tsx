@@ -11,7 +11,7 @@ import { Search } from "lucide-react";
 export function ChatInput({ onChange, onClick }: any) 
 {
     return (
-        <InputGroup className="max-w-xl">
+        <InputGroup className="w-2xl">
             <InputGroupInput onChange={onChange} placeholder="Search..." />
             <InputGroupAddon>
                 <Search />
