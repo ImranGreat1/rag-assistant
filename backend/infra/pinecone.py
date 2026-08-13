@@ -2,7 +2,8 @@ import os
 from typing import Any
 
 from dotenv import load_dotenv
-from pinecone import Index, Pinecone
+from pinecone import AsyncPinecone as Pinecone
+from pinecone import Index
 from pydantic import BaseModel
 
 
@@ -39,14 +40,14 @@ class PineconeDB:
 
         self.pc = Pinecone(api_key=api_key)
 
-    def create_or_get_index(
+    async def create_or_get_index(
         self,
         name: str,
         cloud: str = "aws",
         region: str = "us-east-1",
         embed: EmbeddingConfig = None,
     ) -> Index:
-        if not self.pc.has_index(name=name):
+        if not await self.pc.has_index(name=name):
             embedding_config = {
                 "model": "llama-text-embed-v2",
                 "field_map": {"text": "content"},
@@ -54,18 +55,24 @@ class PineconeDB:
             if embed:
                 embedding_config = embed
 
-            self.pc.create_index_for_model(
+            await self.pc.create_index_for_model(
                 name=name, cloud=cloud, region=region, embed=embedding_config
             )
-        index = self.pc.Index(name)
+        index = await self.pc.index(name)
         return index
 
-    def upsert_records(self, index: Index, namespace: str, docs: list[Any]):
-        index.upsert_records(namespace=namespace, docs=docs)
+    async def get_index(self, name: str) -> Index:
+        if not await self.pc.has_index(name=name):
+            raise ValueError(f"Index {name} does not exist")
+        index = await self.pc.index(name)
+        return index
 
-    def search_index(self, index: Index, namespace: str, query: Query, rerank: Rerank):
-        results = index.search(namespace=namespace, query=query, rerank=rerank)
+    async def upsert_records(self, index: Index, namespace: str, docs: list[Any]):
+        await index.upsert_records(namespace=namespace, docs=docs)
+
+    async def search_index(self, index: Index, namespace: str, query: Query, rerank: Rerank):
+        results = await index.search(namespace=namespace, query=query, rerank=rerank)
         return [(hit.fields["content"], round(hit.score, 2)) for hit in results["result"]["hits"]]
 
-    def close(self):
-        self.pc.close()
+    async def close(self):
+        await self.pc.close()

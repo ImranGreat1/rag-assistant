@@ -20,8 +20,8 @@ class RagPipeline:
         """
         # Retrieve documents that are relevant to the query
         pc = PineconeDB()
-        index = pc.create_or_get_index(name="rag-assistance")
-        relevant_contexts = pc.search_index(
+        index = await pc.create_or_get_index(name="rag-assistance")
+        relevant_contexts = await pc.search_index(
             index=index,
             namespace="health-wellness-guide",
             query={
