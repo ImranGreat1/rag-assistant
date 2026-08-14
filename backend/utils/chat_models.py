@@ -4,6 +4,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 from google import genai
+from langsmith.wrappers import wrap_openai
 from openai import AsyncOpenAI
 
 
@@ -13,6 +14,7 @@ class ChatOpenAI:
         model_name: str,
         base_url: str | None = None,
         api_key_var: str | None = None,
+        tracing: bool = False,
     ):
         api_key = os.getenv(api_key_var if api_key_var else "OPENAI_API_KEY")
         if not api_key:
@@ -21,30 +23,34 @@ class ChatOpenAI:
         self.model_name = model_name
         self.base_url = base_url
         self.api_key = api_key
-        self.client = (
-            AsyncOpenAI(api_key=self.api_key, base_url=self.base_url)
-            if self.base_url
-            else AsyncOpenAI()
-        )
+        self.client = self.init_client(api_key, base_url, tracing)
 
+    # Initial OpenAI Client SDK
+    def init_client(self, api_key: str, base_url: str, tracing: bool) -> AsyncOpenAI:
+        kwargs = { "api_key": api_key }
+        if base_url:
+            kwargs["base_url"] = base_url
+
+        client = (
+            wrap_openai(AsyncOpenAI(**kwargs)) if tracing else AsyncOpenAI(**kwargs)
+        )
+        return client
+
+    # Perform Inference - call the LLM
     async def run(self, messages: list[dict[str, Any]], stream: bool = False):
         if stream:
             return self._stream_response(messages)
         else:
             response = await self.client.chat.completions.create(
-                model=self.model_name, 
-                messages=messages,
-                stream=stream
+                model=self.model_name, messages=messages, stream=stream
             )
             return response.choices[0].message.content
 
+    # Stream LLM response
     async def _stream_response(self, messages: list[dict[str, Any]]):
         response = await self.client.chat.completions.create(
-            model=self.model_name,
-            messages=messages,
-            stream=True
+            model=self.model_name, messages=messages, stream=True
         )
-
         async for chunk in response:
             if chunk.choices and chunk.choices[0].delta.content:
                 yield chunk.choices[0].delta.content
@@ -82,7 +88,7 @@ class ChatGoogleGenAI:
 
 async def main():
     load_dotenv()
-    
+
     # Testing Google chat API
     # chat_google = ChatGoogleGenAI(model_name="gemini-3.6-flash")
     # response = chat_google.run(
@@ -102,7 +108,10 @@ async def main():
             "role": "developer",
             "content": "You are helpful assistant that gives brief and precise response",
         },
-        {"role": "user", "content": "In not less than 100 words, give a brief explaination on AI and Agents"},
+        {
+            "role": "user",
+            "content": "In not less than 100 words, give a brief explaination on AI and Agents",
+        },
     ]
     stream_gen = await chat_openai.run(messages=messages, stream=True)
     async for chunk in stream_gen:

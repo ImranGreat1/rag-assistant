@@ -13,10 +13,8 @@ load_dotenv()
 class UserQuery(BaseModel):
     query: str
 
-
 app = FastAPI()
-print(os.getenv("FRONTEND_URL_LOCAL"))
-print(os.getenv("FRONTEND_URL_LIVE"))
+
 origins = [os.getenv("FRONTEND_URL_LOCAL"), os.getenv("FRONTEND_URL_LIVE")]
 app.add_middleware(
     CORSMiddleware,
@@ -32,6 +30,11 @@ def root():
 
 @app.post("/chat")
 async def chat(user_query: UserQuery):
+    stream = False
     pipeline = RagPipeline()
-    response_gen = await pipeline.run_pipeline(user_query.query)
-    return StreamingResponse(response_gen, media_type="text/plain")
+    response = await pipeline.run_pipeline(user_query.query, stream=stream)
+    if stream:
+        # response is an async generator when stream is True
+        return StreamingResponse(response, media_type="text/plain")
+    else:
+        return { "response": response }

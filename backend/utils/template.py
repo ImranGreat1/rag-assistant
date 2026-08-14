@@ -15,6 +15,6 @@ RAG_USER_TEMPLATE = """Context Information:
 Number of relevant sources found: {context_count}
 {similarity_scores}
 
-Question: {user_query}
+Question: {query}
 
 Please provide your answer based solely on the context above."""
