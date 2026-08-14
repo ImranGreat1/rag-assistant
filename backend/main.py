@@ -30,7 +30,7 @@ def root():
 
 @app.post("/chat")
 async def chat(user_query: UserQuery):
-    stream = False
+    stream = True
     pipeline = RagPipeline()
     response = await pipeline.run_pipeline(user_query.query, stream=stream)
     if stream:
