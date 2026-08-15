@@ -58,9 +58,9 @@ class ChatOpenAI:
 
 class ChatGoogleGenAI:
     def __init__(self, model_name: str):
-        api_key = os.getenv("GEMINI_API_KEY")
+        api_key = os.getenv("GOOGLE_API_KEY")
         if not api_key:
-            raise ValueError("Gemini API key is not provided")
+            raise ValueError("GOOGLE API key is not provided")
 
         self.model_name = model_name
         self.api_key = api_key
@@ -101,7 +101,7 @@ async def main():
     chat_openai = ChatOpenAI(
         model_name="gemini-3.6-flash",
         base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-        api_key_var="GEMINI_API_KEY",
+        api_key_var="GOOGLE_API_KEY",
     )
     messages = [
         {

@@ -106,7 +106,7 @@ Every stage of the runtime pipeline — retrieval, prompt construction, and infe
 
 | Env var | Purpose |
 |---|---|
-| `GEMINI_API_KEY` | API key used by `ChatOpenAI` to authenticate against the Gemini OpenAI-compatible endpoint. |
+| `GOOGLE_API_KEY` | API key used by `ChatOpenAI` to authenticate against the Gemini OpenAI-compatible endpoint. |
 | `PINECONE_API_KEY` | API key for the Pinecone vector store. |
 | *(LangSmith env vars)* | Standard `LANGCHAIN_TRACING_V2`, `LANGCHAIN_API_KEY`, etc., required for `@traceable` to emit traces. |
 

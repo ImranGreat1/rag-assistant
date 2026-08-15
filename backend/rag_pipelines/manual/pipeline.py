@@ -49,7 +49,7 @@ class ManualRagPipeline:
         chat_model = ChatOpenAI(
             model_name="gemini-3.6-flash",
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-            api_key_var="GEMINI_API_KEY",
+            api_key_var="GOOGLE_API_KEY",
             tracing=True,
         )
         return chat_model

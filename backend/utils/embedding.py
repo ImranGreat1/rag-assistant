@@ -8,8 +8,8 @@ from google import genai
 class GeminiEmbeddingModel:
     def __init__(self, model: str = "gemini-embedding-001", batch: int = 200):
         load_dotenv()
-        if not os.getenv("GEMINI_API_KEY"):
-            raise ValueError("GEMINI API KEY is not set")
+        if not os.getenv("GOOGLE_API_KEY"):
+            raise ValueError("GOOGLE API KEY is not set")
 
         self.client = genai.Client()
         self.model = model
