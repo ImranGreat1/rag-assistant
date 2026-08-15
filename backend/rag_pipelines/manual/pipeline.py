@@ -2,13 +2,12 @@ import asyncio
 
 from infra.pinecone import PineconeDB
 from langsmith import traceable
-
 from utils.chat_models import ChatOpenAI
 from utils.prompt import Prompt
 from utils.template import RAG_SYSTEM_TEMPLATE, RAG_USER_TEMPLATE
 
 
-class RagPipeline:
+class ManualRagPipeline:
     def __init__(self):
         pass
 
@@ -98,7 +97,7 @@ class RagPipeline:
 
 
 async def main():
-    rag_pipeline = RagPipeline()
+    rag_pipeline = ManualRagPipeline()
     response = await rag_pipeline.run_pipeline("Explain exercise basics", stream=False)
     print(response)
 
