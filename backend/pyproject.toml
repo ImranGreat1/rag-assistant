@@ -3,7 +3,7 @@ name = "backend"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13.1"
+requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.139.2",
     "fastembed>=0.8.0",
