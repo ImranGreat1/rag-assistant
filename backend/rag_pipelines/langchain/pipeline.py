@@ -49,12 +49,13 @@ class LangChainRagPipeline:
         vector_store = QdrantVectorStore.from_existing_collection(
             collection_name="rag-assistant", 
             embedding=embedding, 
-            path="./vector_store",
-            # url=os.getenv("QDRANT_CLUSTER_ENDPOINT") # For cloud hosted Qdrant
+            # path="./vector_store", # For local Qdrant store
+            url=os.getenv("QDRANT_CLUSTER_ENDPOINT"), # For cloud hosted Qdrant
+            api_key=os.getenv("QDRANT_API_KEY")
         )
         result = await vector_store.asimilarity_search(query=query, k=k)
         context = "\n".join(doc.page_content for doc in result)
-        # Prompts runnable expects these values to replace the placeholders
+        # Prompt runnable expects these values to replace the placeholders
         return {
             "response_style": "precise",
             "response_length": "brief",
