@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from rag_pipelines.manual.pipeline import ManualRagPipeline
+from rag_pipelines.langchain.pipeline import LangChainRagPipeline
 
 load_dotenv()
 
@@ -31,7 +31,7 @@ def root():
 @app.post("/chat")
 async def chat(user_query: UserQuery):
     stream = True
-    pipeline = ManualRagPipeline()
+    pipeline = LangChainRagPipeline()
     response = await pipeline.run_pipeline(user_query.query, stream=stream)
     if stream:
         # response is an async generator when stream is True
