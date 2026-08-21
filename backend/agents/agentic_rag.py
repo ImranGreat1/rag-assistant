@@ -90,6 +90,33 @@ def log_after_model(state: AgentState, runtime):
     return None
 
 
+@after_model
+def add_friendly_greeting(state: AgentState, runtime):
+    messages = state.get("messages", [])
+    if not messages:
+        return None
+
+    last_message = messages[-1]
+    greeting = "Hello dear! 🤠\n\n"
+
+    content = last_message.content
+
+    if isinstance(content, str):
+        new_content = greeting + content
+    elif isinstance(content, list):
+        new_content = None
+        if len(content) > 0 and "text" in content[-1]:
+            last_content = content[-1]
+            last_content["text"] = greeting + last_content["text"]
+            new_content = content
+    else:
+        return None
+
+    # Create a new message rather than mutating in place
+    new_message = last_message.model_copy(update={"content": new_content})
+    return {"messages": [new_message]}
+        
+
 call_limiter = ModelCallLimitMiddleware(
     thread_limit=10,  # Max calls per conversation thread
     run_limit=5,  # Max calls per single run
@@ -99,7 +126,7 @@ call_limiter = ModelCallLimitMiddleware(
 
 def agentic_rag():
     tools = [search_wellnesss_knowledge, calculate]
-    middlewares = [log_before_model, log_after_model, call_limiter]
+    middlewares = [log_before_model, log_after_model, call_limiter, add_friendly_greeting]
     agent = create_agent(
         model="google_genai:gemini-3.6-flash",
         system_prompt=system_prompt,
@@ -116,7 +143,7 @@ async def main():
             "messages": [
                 {
                     "role": "user",
-                    "content": "How does quality sleep improve my health?",
+                    "content": "Mention 3 quality sleeping tips",
                 }
             ]
         }
