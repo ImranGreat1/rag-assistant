@@ -12,7 +12,7 @@ from langchain.agents.middleware import (
 from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_qdrant import QdrantVectorStore
 
-from agents.agent_loop import calculate
+from agents.tools import calculate
 
 load_dotenv()
 
