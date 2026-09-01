@@ -10,6 +10,7 @@ from langchain.agents.middleware import (
     before_model,
 )
 from langchain_community.embeddings import FastEmbedEmbeddings
+from langchain_core.tools import tool
 from langchain_qdrant import QdrantVectorStore
 
 from agents.tools import calculate
@@ -37,6 +38,7 @@ Remember: Always cite information from the knowledge base when applicable."""
 
 
 # Tools
+@tool
 async def search_wellnesss_knowledge(query: str) -> str:
     """Search the wellness knowledge base for information about health, fitness, nutrition, sleep, and mental wellness.
 

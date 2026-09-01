@@ -2,6 +2,7 @@ import os
 from typing import Annotated, Literal, TypedDict
 
 from dotenv import load_dotenv
+from langchain.tools import tool
 from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langchain_ollama import ChatOllama, OllamaEmbeddings
@@ -12,39 +13,8 @@ from langgraph.prebuilt import ToolNode
 
 from agents.tools import calculate, get_current_time
 
-
-# Define the state
-class SimpleState(TypedDict):
-    messages: Annotated[list, add_messages]
-
-
-# Define a node - function that modify the state
-def echo_node(state: SimpleState):
-    """A simple node that echoes the last message"""
-    last_message = state["messages"][-1]
-    new_message = AIMessage(content=f"You said: {last_message.content}")
-    return {"messages": [new_message]}
-
-
-def simple_langraph_agent():
-    # Build the graph
-    graph = StateGraph(SimpleState)
-
-    # Add the echo_node to the graph
-    graph.add_node("echo", echo_node)
-
-    # Add edge - START -> echo_node
-    graph.add_edge(START, "echo")
-
-    # Add edge - echo_node -> END
-    graph.add_edge("echo", END)
-
-    # Compile the graph
-    agent = graph.compile()
-    return agent
-
-
 load_dotenv()
+
 # Connect to the vector store
 vector_store = QdrantVectorStore.from_existing_collection(
     collection_name="rag-assistant",
@@ -56,6 +26,7 @@ vector_store = QdrantVectorStore.from_existing_collection(
 
 MAX_MODEL_CALLS = 3
 
+
 # AGENT WITH TOOLS
 class AgentState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
@@ -63,6 +34,7 @@ class AgentState(TypedDict):
 
 
 # RAG tool
+@tool
 def search_wellness_knowledge(query: str) -> str:
     """Search the wellness knowledge base for information about health, fitness, nutrition, sleep, and mental wellness.
 
@@ -141,7 +113,7 @@ def model_node(state: AgentState):
 
 
 # A conditional that decides which node to go next
-def should_continue(state: AgentState) -> Literal["tools", "end"]:
+def route_to_next_node(state: AgentState) -> Literal["tools", "end"]:
     """Determine whether to call tools or end the conversation"""
     last_message = state["messages"][-1]
     model_calls_count = state["model_calls_count"]
@@ -173,12 +145,12 @@ def agent_with_tools():
     # Set the entry point
     graph.add_edge(START, "model")
 
-    # Add a conditonal Edge from model either tools or end node
+    # Add a conditonal Edge from the model node to either the tools or the end node
     graph.add_conditional_edges(
-        "model", should_continue, {"tools": "tools", "end": END}
+        "model", route_to_next_node, {"tools": "tools", "end": END}
     )
 
-    # Add edge from tools back to model (the loop!)
+    # Add edge from tools back to model (the loop!) - This is the agentic pattern
     graph.add_edge("tools", "model")
 
     # Compile the graph
@@ -191,8 +163,8 @@ def main():
     query = {
         "messages": [
             HumanMessage(
-                content="Give some wellness advice that can improve the quality of my sleep"
-                # content="Calculate fourty seven times 20 and multiple the result by the current hour."
+                # content="Give some wellness advice that can improve the quality of my sleep"
+                content="Calculate fourty seven times 20 and multiple the result by the current hour."
             )
         ]
     }
@@ -218,12 +190,11 @@ def main():
 
 
 if __name__ == "__main__":
-
     main()
 
     test_llm = False
     if test_llm:
-        llm = ChatOllama(model="qwen3:14b", temperature=0, keep_alive="3m")
+        llm = ChatOllama(model="qwen3:8b", temperature=0, keep_alive="3m")
         messages = [
             (
                 "system",

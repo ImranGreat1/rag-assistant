@@ -20,7 +20,7 @@ vector_store = QdrantVectorStore.from_existing_collection(
 )
 
 
-def create_custom_agent():
+def langchain_agent():
     tools = [get_current_time, calculate, fahrenheit_to_celcius, rand_int]
     agent = create_agent(
         model="google_genai:gemini-3.6-flash",
@@ -31,7 +31,7 @@ def create_custom_agent():
 
 
 async def main():
-    agent = create_custom_agent()
+    agent = langchain_agent()
     response = await agent.ainvoke(
         {
             "messages": [
